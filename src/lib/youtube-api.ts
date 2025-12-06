@@ -1,14 +1,24 @@
 import { VideoMetadata } from '@/types';
 import { parseIsoDuration } from './youtube-utils';
 
-export interface YouTubeApiError {
+export class YouTubeApiError extends Error {
   code: number;
-  message: string;
   errors?: Array<{
     domain: string;
     reason: string;
     message: string;
   }>;
+
+  constructor(message: string, code: number = 400, errors?: Array<{
+    domain: string;
+    reason: string;
+    message: string;
+  }>) {
+    super(message);
+    this.name = 'YouTubeApiError';
+    this.code = code;
+    this.errors = errors;
+  }
 }
 
 export class YouTubeApiService {

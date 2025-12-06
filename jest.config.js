@@ -1,11 +1,11 @@
 /** @type {import('jest').Config} */
 const config = {
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   testMatch: [
     '**/__tests__/**/*.(test|spec).(js|jsx|ts|tsx)',
     '**/*.(test|spec).(js|jsx|ts|tsx)'
   ],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
@@ -18,6 +18,7 @@ const config = {
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
   ],
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
 }
 
 module.exports = config

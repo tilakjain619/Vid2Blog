@@ -104,3 +104,24 @@ export interface ExportOptions {
   includeMetadata?: boolean;
   filename?: string;
 }
+
+// Transcript processing types
+export interface TranscriptProcessingOptions {
+  removeFillerWords?: boolean;
+  mergeSimilarSegments?: boolean;
+  minSegmentDuration?: number; // seconds
+  maxSegmentDuration?: number; // seconds
+  cleanFormatting?: boolean;
+  normalizeWhitespace?: boolean;
+}
+
+export interface ProcessedTranscript extends Transcript {
+  originalSegmentCount: number;
+  processedSegmentCount: number;
+  cleanedText: string;
+  processingStats: {
+    fillerWordsRemoved: number;
+    segmentsMerged: number;
+    formattingCleaned: number;
+  };
+}
