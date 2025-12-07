@@ -4,11 +4,12 @@ import { ProcessingStatus as ProcessingStatusType } from '@/types';
 import { useProcessingStatus } from '@/hooks/useProcessingStatus';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { ProcessingError } from '@/lib/error-handling';
 
 interface ProcessingStatusCompactProps {
   videoUrl?: string;
   onComplete?: (result: any) => void;
-  onError?: (error: string) => void;
+  onError?: (error: ProcessingError) => void;
   className?: string;
   showDetails?: boolean;
 }

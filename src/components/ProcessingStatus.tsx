@@ -5,11 +5,13 @@ import { ProcessingStatus as ProcessingStatusType } from '@/types';
 import { useProcessingStatus } from '@/hooks/useProcessingStatus';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { ErrorDisplay } from './ErrorDisplay';
+import { ProcessingError } from '@/lib/error-handling';
 
 interface ProcessingStatusProps {
   videoUrl?: string;
   onComplete?: (result: any) => void;
-  onError?: (error: string) => void;
+  onError?: (error: ProcessingError) => void;
   className?: string;
   autoStart?: boolean;
 }
@@ -228,6 +230,17 @@ export function ProcessingStatus({
               Reset
             </Button>
           )}
+        </div>
+      )}
+
+      {/* Error Display */}
+      {status.stage === 'error' && (
+        <div className="mb-4">
+          <ErrorDisplay
+            error={status.message}
+            onRetry={videoUrl ? () => startProcessing(videoUrl) : undefined}
+            showDetails={process.env.NODE_ENV === 'development'}
+          />
         </div>
       )}
 

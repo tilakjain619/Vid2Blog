@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { ProcessingStatus } from '../ProcessingStatus';
 import { ProcessingStatusCompact } from '../ProcessingStatusCompact';
 import { Button } from '../ui/button';
+import { ProcessingError } from '@/lib/error-handling';
 
 export function ProcessingStatusExample() {
   const [videoUrl, setVideoUrl] = useState('');
   const [showProcessing, setShowProcessing] = useState(false);
   const [showCompact, setShowCompact] = useState(false);
   const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ProcessingError | null>(null);
 
   const handleStartProcessing = () => {
     if (!videoUrl.trim()) return;
@@ -25,9 +26,9 @@ export function ProcessingStatusExample() {
     setShowProcessing(false);
   };
 
-  const handleError = (errorMessage: string) => {
-    console.error('Processing error:', errorMessage);
-    setError(errorMessage);
+  const handleError = (processingError: ProcessingError) => {
+    console.error('Processing error:', processingError);
+    setError(processingError);
     setShowProcessing(false);
   };
 
@@ -127,7 +128,7 @@ export function ProcessingStatusExample() {
           <h2 className="text-xl font-semibold text-red-800 mb-4">
             Processing Error
           </h2>
-          <p className="text-red-700">{error}</p>
+          <p className="text-red-700">{error?.details.userMessage || error?.message}</p>
         </div>
       )}
 

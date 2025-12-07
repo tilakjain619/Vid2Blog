@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { ProcessingStatus } from '@/types';
+import { ProcessingError, normalizeError } from '@/lib/error-handling';
 
 interface ProcessingResult {
   metadata?: any;
@@ -12,7 +13,7 @@ interface ProcessingResult {
 
 interface UseProcessingStatusOptions {
   onComplete?: (result: ProcessingResult) => void;
-  onError?: (error: string) => void;
+  onError?: (error: ProcessingError) => void;
   onStageChange?: (stage: ProcessingStatus['stage']) => void;
 }
 
@@ -207,15 +208,15 @@ export function useProcessingStatus(options: UseProcessingStatusOptions = {}) {
       onComplete?.(processingResult);
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const processingError = normalizeError(error);
       
       updateStatus({
         stage: 'error',
         progress: 0,
-        message: errorMessage
+        message: processingError.details.userMessage
       });
       
-      onError?.(errorMessage);
+      onError?.(processingError);
     } finally {
       setIsProcessing(false);
       abortControllerRef.current = null;

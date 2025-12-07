@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ArticleGenerator } from '@/lib/article-generator';
+import { AIArticleGenerator } from '@/lib/ai-article-generator';
 import { 
   ContentAnalysis, 
   VideoMetadata, 
@@ -78,13 +79,26 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateA
       ...body.options
     };
 
-    // Generate the article
-    const article = ArticleGenerator.generateArticle(
-      body.analysis,
-      body.videoMetadata,
-      body.transcript,
-      options
-    );
+    // Generate the article using AI (with fallback to template-based)
+    let article;
+    try {
+      // Try AI generation first
+      article = await AIArticleGenerator.generateArticle(
+        body.analysis,
+        body.videoMetadata,
+        body.transcript,
+        options
+      );
+    } catch (error) {
+      console.warn('AI generation failed, falling back to template-based generation:', error);
+      // Fallback to template-based generation
+      article = ArticleGenerator.generateArticle(
+        body.analysis,
+        body.videoMetadata,
+        body.transcript,
+        options
+      );
+    }
 
     const processingTime = Date.now() - startTime;
 

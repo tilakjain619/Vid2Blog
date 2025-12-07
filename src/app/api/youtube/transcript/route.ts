@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TranscriptService } from '@/lib/transcript-service';
 import { extractVideoId } from '@/lib/youtube-utils';
+import { createProcessingError, ErrorType } from '@/lib/error-handling';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,8 +17,13 @@ export async function GET(request: NextRequest) {
     if (url) {
       const id = extractVideoId(url);
       if (!id) {
+        const error = createProcessingError(ErrorType.INVALID_URL);
         return NextResponse.json(
-          { error: 'Invalid YouTube URL format' },
+          { 
+            error: error.details.userMessage,
+            type: error.type,
+            suggestions: error.details.suggestions
+          },
           { status: 400 }
         );
       }
@@ -25,8 +31,13 @@ export async function GET(request: NextRequest) {
     } else if (videoId) {
       extractedVideoId = videoId;
     } else {
+      const error = createProcessingError(ErrorType.VALIDATION_ERROR, undefined, 'Either url or videoId parameter is required');
       return NextResponse.json(
-        { error: 'Either url or videoId parameter is required' },
+        { 
+          error: error.details.userMessage,
+          type: error.type,
+          suggestions: error.details.suggestions
+        },
         { status: 400 }
       );
     }
@@ -45,36 +56,35 @@ export async function GET(request: NextRequest) {
     console.error('Transcript extraction error:', error);
     
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    let errorType: ErrorType;
+    let statusCode = 500;
     
     // Handle specific error cases
     if (errorMessage.includes('Transcript is disabled') || 
         errorMessage.includes('No transcript found')) {
-      return NextResponse.json(
-        { 
-          error: 'No transcript available for this video',
-          details: errorMessage
-        },
-        { status: 404 }
-      );
+      errorType = ErrorType.NO_TRANSCRIPT;
+      statusCode = 404;
+    } else if (errorMessage.includes('Video unavailable') || 
+               errorMessage.includes('Private video')) {
+      errorType = ErrorType.PRIVATE_VIDEO;
+      statusCode = 403;
+    } else if (errorMessage.includes('language') && errorMessage.includes('unavailable')) {
+      errorType = ErrorType.TRANSCRIPT_LANGUAGE_UNAVAILABLE;
+      statusCode = 400;
+    } else {
+      errorType = ErrorType.PROCESSING_FAILED;
     }
 
-    if (errorMessage.includes('Video unavailable') || 
-        errorMessage.includes('Private video')) {
-      return NextResponse.json(
-        { 
-          error: 'Video is not accessible',
-          details: errorMessage
-        },
-        { status: 403 }
-      );
-    }
-
+    const processingError = createProcessingError(errorType, error as Error);
+    
     return NextResponse.json(
       { 
-        error: 'Failed to extract transcript',
-        details: errorMessage
+        error: processingError.details.userMessage,
+        type: processingError.type,
+        suggestions: processingError.details.suggestions,
+        retryable: processingError.details.retryable
       },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }

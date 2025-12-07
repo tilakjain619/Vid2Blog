@@ -105,6 +105,36 @@ export interface ExportOptions {
   filename?: string;
 }
 
+// User preferences and configuration types
+export interface UserPreferences {
+  articleLength: 'short' | 'medium' | 'long';
+  tone: 'professional' | 'casual' | 'technical';
+  format: 'markdown' | 'html' | 'plain';
+  includeTimestamps: boolean;
+  selectedTemplate: string;
+  autoSave: boolean;
+  exportFormat: 'markdown' | 'html' | 'pdf';
+  includeMetadata: boolean;
+}
+
+export interface ConfigurationOptions {
+  articleLength: 'short' | 'medium' | 'long';
+  tone: 'professional' | 'casual' | 'technical';
+  format: 'markdown' | 'html' | 'plain';
+  template: string;
+  includeTimestamps: boolean;
+  customPrompt?: string;
+}
+
+export interface TemplatePreview {
+  name: string;
+  type: string;
+  description: string;
+  estimatedLength: 'short' | 'medium' | 'long';
+  defaultTone: 'professional' | 'casual' | 'technical';
+  sampleOutput: string;
+}
+
 // Transcript processing types
 export interface TranscriptProcessingOptions {
   removeFillerWords?: boolean;
