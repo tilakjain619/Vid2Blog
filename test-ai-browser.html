@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Generation Test</title>
+</head>
+<body>
+    <h1>AI Generation Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAI() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Test 1: OpenRouter connection
+                results.innerHTML += '<h2>Testing OpenRouter Connection...</h2>';
+                const testResponse = await fetch('/api/test-ai');
+                const testResult = await testResponse.json();
+                
+                if (testResult.success) {
+                    results.innerHTML += '<p>✅ OpenRouter API is working!</p>';
+                    results.innerHTML += `<p>AI Response: ${testResult.aiResponse}</p>`;
+                } else {
+                    results.innerHTML += `<p>❌ OpenRouter API test failed: ${testResult.error}</p>`;
+                    return;
+                }
+                
+                // Test 2: Full processing pipeline
+                results.innerHTML += '<h2>Testing Full Processing Pipeline...</h2>';
+                const processResponse = await fetch('/api/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                        options: {
+                            articleLength: 'short',
+                            tone: 'casual',
+                            format: 'markdown'
+                        }
+                    })
+                });
+                
+                const processResult = await processResponse.json();
+                
+                if (processResult.success) {
+                    results.innerHTML += '<p>✅ Full processing pipeline successful!</p>';
+                    results.innerHTML += `<p>Generation method: ${processResult.data?.generationMethod || 'unknown'}</p>`;
+                    results.innerHTML += `<p>Article title: ${processResult.data?.article?.title}</p>`;
+                    results.innerHTML += `<p>Article sections: ${processResult.data?.article?.sections?.length || 0}</p>`;
+                    
+                    // Show the full article
+                    if (processResult.data?.article) {
+                        results.innerHTML += '<h3>Generated Article:</h3>';
+                        results.innerHTML += `<pre>${JSON.stringify(processResult.data.article, null, 2)}</pre>`;
+                    }
+                } else {
+                    results.innerHTML += `<p>❌ Processing pipeline failed: ${processResult.error}</p>`;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p>❌ Test failed: ${error.message}</p>`;
+            }
+        }
+        
+        // Run test when page loads
+        testAI();
+    </script>
+</body>
+</html>

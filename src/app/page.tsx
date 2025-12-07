@@ -97,6 +97,11 @@ function HomePage() {
         setMetadata(data.data.metadata);
         setProcessingResult(data.data);
         console.log('Full processing result:', data.data);
+        
+        // Show generation method if available
+        if (data.data.generationMethod) {
+          console.log('Article generation method:', data.data.generationMethod);
+        }
       }
     } catch (err) {
       const processingError = normalizeError(err);
@@ -146,7 +151,7 @@ function HomePage() {
                   Article Length
                 </label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full text-zinc-700 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   defaultValue="medium"
                   id="article-length"
                 >
@@ -161,7 +166,7 @@ function HomePage() {
                   Writing Tone
                 </label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full text-zinc-700 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   defaultValue="professional"
                   id="writing-tone"
                 >
@@ -176,7 +181,7 @@ function HomePage() {
                   Article Template
                 </label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 text-zinc-700 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   defaultValue="auto"
                   id="article-template"
                 >
@@ -194,7 +199,7 @@ function HomePage() {
                   Output Format
                 </label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full text-zinc-700 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   defaultValue="markdown"
                   id="output-format"
                 >
@@ -336,11 +341,32 @@ function HomePage() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-green-200">
-                  <div className="flex items-center gap-2 text-green-700">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-sm font-medium">Blog article generated successfully!</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-green-700">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium">Blog article generated successfully!</span>
+                    </div>
+                    {processingResult.generationMethod && (
+                      <div className="flex items-center gap-1 text-xs text-gray-600">
+                        {processingResult.generationMethod === 'ai' ? (
+                          <>
+                            <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                            </svg>
+                            <span className="text-blue-600 font-medium">AI Generated</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clipRule="evenodd" />
+                            </svg>
+                            <span className="text-gray-600">Template Based</span>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -348,7 +374,28 @@ function HomePage() {
               {/* Generated Article Preview */}
               {processingResult.article && (
                 <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Generated Article</h4>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-semibold text-gray-900">Generated Article</h4>
+                    {processingResult.generationMethod && (
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium">
+                        {processingResult.generationMethod === 'ai' ? (
+                          <div className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                            </svg>
+                            <span>AI Generated</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clipRule="evenodd" />
+                            </svg>
+                            <span>Template Based</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   <div className="bg-white p-4 rounded border max-h-96 overflow-y-auto">
                     <h1 className="text-2xl font-bold mb-4">{processingResult.article.title}</h1>
@@ -422,13 +469,6 @@ function HomePage() {
                     >
                       Copy as Text
                     </Button>
-                    <Button
-                      onClick={() => console.log('Full article data:', processingResult.article)}
-                      variant="outline"
-                      className="text-sm"
-                    >
-                      View in Console
-                    </Button>
                   </div>
                 </div>
               )}
@@ -437,19 +477,19 @@ function HomePage() {
               <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                 <h4 className="text-sm font-semibold text-gray-900 mb-2">Processing Summary</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                  <div>
+                  <div className='text-gray-600'>
                     <span className="text-gray-600">Transcript segments:</span>
                     <div className="font-medium">{processingResult.transcript?.segments?.length || 0}</div>
                   </div>
-                  <div>
+                  <div className='text-gray-600'>
                     <span className="text-gray-600">Key points:</span>
                     <div className="font-medium">{processingResult.analysis?.keyPoints?.length || 0}</div>
                   </div>
-                  <div>
+                  <div className='text-gray-600'>
                     <span className="text-gray-600">Topics identified:</span>
                     <div className="font-medium">{processingResult.analysis?.topics?.length || 0}</div>
                   </div>
-                  <div>
+                  <div className='text-gray-600'>
                     <span className="text-gray-600">Word count:</span>
                     <div className="font-medium">{processingResult.article?.metadata?.wordCount || 0}</div>
                   </div>
@@ -460,10 +500,11 @@ function HomePage() {
         </div>
 
         {/* Instructions */}
-        <div className="text-center">
+        <div className="text-center space-y-4">
           <p className="text-sm text-gray-500">
             Enter a YouTube URL above to get started. The system will validate the URL and extract video information.
           </p>
+
         </div>
       </main>
     </div>

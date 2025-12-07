@@ -81,7 +81,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateA
 
     // Generate the article using AI (with fallback to template-based)
     let article;
+    let generationMethod = 'template';
+    
     try {
+      console.log('Attempting AI article generation...');
       // Try AI generation first
       article = await AIArticleGenerator.generateArticle(
         body.analysis,
@@ -89,6 +92,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateA
         body.transcript,
         options
       );
+      generationMethod = 'ai';
+      console.log('AI generation successful');
     } catch (error) {
       console.warn('AI generation failed, falling back to template-based generation:', error);
       // Fallback to template-based generation
@@ -98,6 +103,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateA
         body.transcript,
         options
       );
+      console.log('Template-based generation used as fallback');
     }
 
     const processingTime = Date.now() - startTime;
@@ -105,7 +111,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateA
     return NextResponse.json({
       success: true,
       article,
-      processingTime
+      processingTime,
+      generationMethod
     });
 
   } catch (error) {

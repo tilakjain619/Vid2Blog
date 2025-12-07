@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Comprehensive AI Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ddd; margin: 10px 0; padding: 15px; border-radius: 5px; }
+        .log { background: #f5f5f5; padding: 8px; margin: 5px 0; border-radius: 3px; font-size: 12px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e9; color: #2e7d32; }
+        .warning { background: #fff3e0; color: #f57c00; }
+        button { padding: 8px 16px; margin: 5px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 11px; }
+        .status { font-weight: bold; padding: 5px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Comprehensive AI Generation Debug</h1>
+    
+    <div class="test-section">
+        <h3>Quick Tests</h3>
+        <button onclick="runAllTests()">🚀 Run All Tests</button>
+        <button onclick="testAIOnly()">🤖 Test AI Only</button>
+        <button onclick="testProcessingOnly()">⚙️ Test Processing Only</button>
+        <button onclick="clearLogs()">🧹 Clear Logs</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Results</h3>
+        <div id="status" class="status">Ready to test</div>
+        <div id="logs"></div>
+    </div>
+    
+    <script>
+        let testResults = {};
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function log(message, type = 'info', section = 'general') {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `<strong>[${section.toUpperCase()}]</strong> ${new Date().toLocaleTimeString()}: ${message}`;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+            console.log(`[${section}] ${message}`);
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            testResults = {};
+            updateStatus('Logs cleared');
+        }
+        
+        async function testAIOnly() {
+            updateStatus('Testing AI connection...', 'warning');
+            log('Starting AI-only test', 'info', 'ai');
+            
+            try {
+                const response = await fetch('/api/test-ai');
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✅ AI connection successful', 'success', 'ai');
+                    log(`AI Response: ${result.aiResponse}`, 'info', 'ai');
+                    testResults.ai = 'success';
+                    updateStatus('AI test passed', 'success');
+                } else {
+                    log(`❌ AI connection failed: ${result.error}`, 'error', 'ai');
+                    testResults.ai = 'failed';
+                    updateStatus('AI test failed', 'error');
+                }
+            } catch (error) {
+                log(`❌ AI test error: ${error.message}`, 'error', 'ai');
+                testResults.ai = 'error';
+                updateStatus('AI test error', 'error');
+            }
+        }
+        
+        async function testProcessingOnly() {
+            updateStatus('Testing processing pipeline...', 'warning');
+            log('Starting processing pipeline test', 'info', 'process');
+            
+            try {
+                const startTime = Date.now();
+                
+                const response = await fetch('/api/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                        options: {
+                            articleLength: 'short',
+                            tone: 'casual',
+                            format: 'markdown'
+                        }
+                    })
+                });
+                
+                const processingTime = Date.now() - startTime;
+                log(`Response received in ${processingTime}ms`, 'info', 'process');
+                log(`Response status: ${response.status}`, response.ok ? 'success' : 'error', 'process');
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✅ Processing successful!', 'success', 'process');
+                    
+                    // Detailed analysis
+                    const data = result.data;
+                    log(`Generation method: ${data?.generationMethod || 'unknown'}`, 'info', 'process');
+                    
+                    if (data?.generationMethod === 'ai') {
+                        log('🎉 AI generation was used!', 'success', 'process');
+                        testResults.processing = 'ai_success';
+                    } else if (data?.generationMethod === 'template') {
+                        log('⚠️ Template generation was used (AI likely failed)', 'warning', 'process');
+                        testResults.processing = 'template_fallback';
+                    } else {
+                        log('❓ Unknown generation method', 'warning', 'process');
+                        testResults.processing = 'unknown';
+                    }
+                    
+                    // Article analysis
+                    if (data?.article) {
+                        log(`Article title: "${data.article.title}"`, 'info', 'article');
+                        log(`Article sections: ${data.article.sections?.length || 0}`, 'info', 'article');
+                        log(`Article word count: ${data.article.metadata?.wordCount || 'unknown'}`, 'info', 'article');
+                        log(`Article tags: ${data.article.tags?.length || 0}`, 'info', 'article');
+                        
+                        // Show article structure
+                        if (data.article.sections) {
+                            log('Article structure:', 'info', 'article');
+                            data.article.sections.forEach((section, i) => {
+                                log(`  ${i+1}. ${section.heading} (${section.content.length} chars)`, 'info', 'article');
+                            });
+                        }
+                        
+                        // Show full article in console for inspection
+                        console.log('Full article object:', data.article);
+                    }
+                    
+                    // Processing stats
+                    if (data?.metadata) {
+                        log(`Video: "${data.metadata.title}"`, 'info', 'video');
+                        log(`Channel: ${data.metadata.channelName}`, 'info', 'video');
+                        log(`Duration: ${data.metadata.duration}s`, 'info', 'video');
+                    }
+                    
+                    if (data?.transcript) {
+                        log(`Transcript segments: ${data.transcript.segments?.length || 0}`, 'info', 'transcript');
+                    }
+                    
+                    if (data?.analysis) {
+                        log(`Key points: ${data.analysis.keyPoints?.length || 0}`, 'info', 'analysis');
+                        log(`Topics: ${data.analysis.topics?.length || 0}`, 'info', 'analysis');
+                        log(`Summary length: ${data.analysis.summary?.length || 0} chars`, 'info', 'analysis');
+                    }
+                    
+                    updateStatus('Processing test completed', 'success');
+                    
+                } else {
+                    log(`❌ Processing failed: ${result.error}`, 'error', 'process');
+                    if (result.stage) {
+                        log(`Failed at stage: ${result.stage}`, 'error', 'process');
+                    }
+                    testResults.processing = 'failed';
+                    updateStatus('Processing test failed', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Processing error: ${error.message}`, 'error', 'process');
+                testResults.processing = 'error';
+                updateStatus('Processing test error', 'error');
+            }
+        }
+        
+        async function runAllTests() {
+            updateStatus('Running comprehensive tests...', 'warning');
+            clearLogs();
+            
+            log('🧪 Starting comprehensive AI generation test suite', 'info', 'suite');
+            
+            // Test 1: AI Connection
+            await testAIOnly();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            
+            // Test 2: Processing Pipeline
+            await testProcessingOnly();
+            
+            // Test Summary
+            log('📊 Test Summary:', 'info', 'summary');
+            log(`AI Connection: ${testResults.ai || 'not tested'}`, 'info', 'summary');
+            log(`Processing: ${testResults.processing || 'not tested'}`, 'info', 'summary');
+            
+            // Diagnosis
+            if (testResults.ai === 'success' && testResults.processing === 'ai_success') {
+                log('🎉 DIAGNOSIS: AI generation is working perfectly!', 'success', 'diagnosis');
+                updateStatus('All tests passed - AI is working!', 'success');
+            } else if (testResults.ai === 'success' && testResults.processing === 'template_fallback') {
+                log('⚠️ DIAGNOSIS: AI connection works, but processing falls back to templates', 'warning', 'diagnosis');
+                log('This suggests an issue in the AI integration within the processing pipeline', 'warning', 'diagnosis');
+                updateStatus('AI works but processing uses templates', 'warning');
+            } else if (testResults.ai !== 'success') {
+                log('❌ DIAGNOSIS: AI connection is failing', 'error', 'diagnosis');
+                updateStatus('AI connection failed', 'error');
+            } else {
+                log('❓ DIAGNOSIS: Unclear issue - check server logs', 'warning', 'diagnosis');
+                updateStatus('Unclear issue detected', 'warning');
+            }
+        }
+        
+        // Auto-run on page load
+        window.onload = function() {
+            log('🚀 Debug page loaded - ready for testing', 'info', 'init');
+            updateStatus('Ready to test');
+        };
+    </script>
+</body>
+</html>

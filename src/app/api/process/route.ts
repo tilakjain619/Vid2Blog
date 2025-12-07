@@ -9,6 +9,7 @@ interface ProcessingRequest {
     articleLength?: 'short' | 'medium' | 'long';
     tone?: 'professional' | 'casual' | 'technical';
     format?: 'markdown' | 'html' | 'plain';
+    customTemplate?: string;
   };
 }
 
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
     const { YouTubeApiService } = await import('@/lib/youtube-api');
     const { TranscriptService } = await import('@/lib/transcript-service');
     const { ContentAnalyzer } = await import('@/lib/content-analyzer');
+    const { AIArticleGenerator } = await import('@/lib/ai-article-generator');
     const { ArticleGenerator } = await import('@/lib/article-generator');
     const { extractVideoId } = await import('@/lib/youtube-utils');
 
@@ -80,17 +82,49 @@ export async function POST(request: NextRequest) {
     // Stage 3: Analyze content
     const analysis = ContentAnalyzer.analyzeContent(transcript);
 
-    // Stage 4: Generate article
-    const article = ArticleGenerator.generateArticle(
-      analysis,
-      metadata,
-      transcript,
-      {
-        length: options.articleLength || 'medium',
-        tone: options.tone || 'professional',
-        format: options.format || 'markdown'
-      }
-    );
+    // Stage 4: Generate article with AI (fallback to template-based)
+    let article;
+    let generationMethod = 'template';
+    
+    const generationOptions = {
+      length: options.articleLength || 'medium',
+      tone: options.tone || 'professional',
+      format: options.format || 'markdown',
+      customTemplate: options.customTemplate
+    };
+
+    try {
+      console.log('Attempting AI article generation...');
+      console.log('Analysis summary:', analysis.summary);
+      console.log('Key points count:', analysis.keyPoints?.length || 0);
+      console.log('Topics count:', analysis.topics?.length || 0);
+      console.log('Generation options:', generationOptions);
+      
+      article = await AIArticleGenerator.generateArticle(
+        analysis,
+        metadata,
+        transcript,
+        generationOptions
+      );
+      generationMethod = 'ai';
+      console.log('✅ AI generation successful');
+    } catch (error) {
+      console.error('❌ AI generation failed with error:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      console.log('Falling back to template-based generation...');
+      article = ArticleGenerator.generateArticle(
+        analysis,
+        metadata,
+        transcript,
+        generationOptions
+      );
+      generationMethod = 'template';
+      console.log('✅ Template-based generation completed');
+    }
 
     // Return complete result
     return NextResponse.json({
@@ -99,7 +133,8 @@ export async function POST(request: NextRequest) {
         metadata,
         transcript,
         analysis,
-        article
+        article,
+        generationMethod
       }
     });
 
